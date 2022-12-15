@@ -1,5 +1,5 @@
 const DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
-function sanitizeDate(date) {
+function sanitizeDate (date: Date): Date {
     date.setHours(1); // setting a Date object without time sets it to 1:00 AM for some god-forsaken reason
     date.setMinutes(0);
     date.setSeconds(0);
@@ -7,17 +7,22 @@ function sanitizeDate(date) {
     return date;
 }
 class Room {
-    constructor({name, bookings, rate, discount}) {
+    name: string;
+    bookings: Array<Booking>;
+    rate: number;
+    discount: number;
+    constructor({name, bookings, rate, discount}: {name: string, bookings: Array<Booking>, rate: number, discount: number}) {
         this.name = name;
         this.bookings = bookings;
         this.rate = rate;
         this.discount = discount;
     }
-    isOccupied(date) {
+    isOccupied(date: Date): boolean {
         date = sanitizeDate(date);
-        return this.bookings.reduce((occupied, booking) => occupied ? true : (booking.checkIn.getTime() <= date.getTime() && (booking.checkOut.getTime() - DAY_MILLISECONDS) >= date.getTime()), false);
+        return this.bookings.reduce((occupied: boolean, booking: Booking) => occupied ? true :
+            (booking.checkIn.getTime() <= date.getTime() && (booking.checkOut.getTime() - DAY_MILLISECONDS) >= date.getTime()), false);
     }
-    occupancyPercentage(startDate, endDate) {
+    occupancyPercentage(startDate: Date, endDate: Date): number {
         startDate = sanitizeDate(startDate);
         endDate = sanitizeDate(endDate);
         if (startDate.getTime() > endDate.getTime()) {
@@ -34,17 +39,23 @@ class Room {
             checkDate += DAY_MILLISECONDS;
         }
         console.log("daysOccupied / daysTotal: " + daysOccupied + " / " + daysTotal);
-        return (daysOccupied / daysTotal).toFixed(2) * 100;
+        return Number(((daysOccupied * 100) / daysTotal ).toFixed(2));
     }
-    static totalOccupancyPercentage (rooms, startDate, endDate) {
-        return Number((rooms.reduce((sum, room) => sum + room.occupancyPercentage(startDate, endDate), 0) / rooms.length).toFixed(0));
+    static totalOccupancyPercentage (rooms: Array<Room>, startDate: Date, endDate: Date): number {
+        return Number((rooms.reduce((sum: number, room: Room): number => sum + room.occupancyPercentage(startDate, endDate), 0) / rooms.length).toFixed(0));
     }
-    static availableRooms(rooms, startDate, endDate) {
+    static availableRooms(rooms: Array<Room>, startDate: Date, endDate: Date) {
         return rooms.filter((room) => room.occupancyPercentage(startDate, endDate) === 0);
     }
 }
 class Booking {
-    constructor({name, email, checkIn, checkOut, discount, room}) {
+    checkIn: Date;
+    checkOut: Date;
+    name: string;
+    email: string;
+    discount: number;
+    room: Room;
+    constructor({name, email, checkIn, checkOut, discount, room} : {name: string, email: string, checkIn: Date, checkOut: Date, discount: number, room: Room}) {
         checkIn = sanitizeDate(checkIn);
         checkOut = sanitizeDate(checkOut);
         this.name = name;
